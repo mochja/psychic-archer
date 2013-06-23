@@ -1,0 +1,51 @@
+#!/bin/bash
+
+js_files=('main.js')
+css_files=('screen.css')
+
+js_files_standalone=('standalone')
+css_files_standalone=('ie')
+
+rm -rf dist/
+mkdir dist/
+cp -r public/* dist/
+
+cd dist/js
+echo 'creating minified.js from '${js_files[@]}
+closure-compiler --compilation_level SIMPLE_OPTIMIZATIONS --js ${js_files[@]} --js_output_file ../../dist/js/minified.js
+rm ${js_files[@]}
+echo 'done..'
+cd ../../
+
+for file in "${js_files_standalone[@]}"
+do
+	f=dist/js/${file}.js
+	if [ -f $f ]; then
+		d=dist/js/${file}.min.js
+		echo 'creating standalone js '$file'.min.js'
+		closure-compiler --compilation_level SIMPLE_OPTIMIZATIONS --js $f --js_output_file $d
+		rm $f
+		echo 'done..'
+	fi
+done
+
+cd dist/css/
+echo 'creating minified.css from '${css_files[@]}
+cssmin ${css_files[@]} > minified.css
+rm ${css_files[@]}
+echo 'done..'
+cd ../../
+
+for file in "${css_files_standalone[@]}"
+do
+	f=dist/css/${file}.css
+	if [ -f $f ]; then
+		d=dist/css/${file}.min.css
+		echo 'creating standalone css '$file'.min.css'
+		cssmin $f > $d
+		rm $f
+		echo 'done..'
+	fi
+done
+
+echo 'completed'
